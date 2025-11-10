@@ -13,21 +13,21 @@ export type cities = {
         bus: string;
         car: string;
         castle: string;
-        "fire station": string;
+        "fire-station": string;
         fountain: string;
         hospital: string;
         house: string;
         library: string;
         park: string;
         playground: string;
-        "police station": string;
+        "police-station": string;
         restaurant: string;
         school: string;
         store: string;
         street: string;
         subway: string;
         taxi: string;
-        "traffic light": string;
+        "traffic-light": string;
         train: string;
       }  
     },
@@ -43,21 +43,21 @@ export type cities = {
         bus: string;
         car: string;
         castle: string;
-        "fire station": string;
+        "fire-station": string;
         fountain: string;
         hospital: string;
         house: string;
         library: string;
         park: string;
         playground: string;
-        "police station": string;
+        "police-station": string;
         restaurant: string;
         school: string;
         store: string;
         street: string;
         subway: string;
         taxi: string;
-        "traffic light": string;
+        "traffic-light": string;
         train: string;
       }  
     },
@@ -73,21 +73,21 @@ export type cities = {
         bus: string;
         car: string;
         castle: string;
-        "fire station": string;
+        "fire-station": string;
         fountain: string;
         hospital: string;
         house: string;
         library: string;
         park: string;
         playground: string;
-        "police station": string;
+        "police-station": string;
         restaurant: string;
         school: string;
         store: string;
         street: string;
         subway: string;
         taxi: string;
-        "traffic light": string;
+        "traffic-light": string;
         train: string;
       }  
     },
@@ -103,21 +103,21 @@ export type cities = {
         bus: string;
         car: string;
         castle: string;
-        "fire station": string;
+        "fire-station": string;
         fountain: string;
         hospital: string;
         house: string;
         library: string;
         park: string;
         playground: string;
-        "police station": string;
+        "police-station": string;
         restaurant: string;
         school: string;
         store: string;
         street: string;
         subway: string;
         taxi: string;
-        "traffic light": string;
+        "traffic-light": string;
         train: string;
       }  
     },
@@ -133,21 +133,21 @@ export type cities = {
         bus: string;
         car: string;
         castle: string;
-        "fire station": string;
+        "fire-station": string;
         fountain: string;
         hospital: string;
         house: string;
         library: string;
         park: string;
         playground: string;
-        "police station": string;
+        "police-station": string;
         restaurant: string;
         school: string;
         store: string;
         street: string;
         subway: string;
         taxi: string;
-        "traffic light": string;
+        "traffic-light": string;
         train: string;
       }  
     },
@@ -163,21 +163,21 @@ export type cities = {
         bus: string;
         car: string;
         castle: string;
-        "fire station": string;
+        "fire-station": string;
         fountain: string;
         hospital: string;
         house: string;
         library: string;
         park: string;
         playground: string;
-        "police station": string;
+        "police-station": string;
         restaurant: string;
         school: string;
         store: string;
         street: string;
         subway: string;
         taxi: string;
-        "traffic light": string;
+        "traffic-light": string;
         train: string;
       }  
     },
@@ -193,21 +193,21 @@ export type cities = {
         bus: string;
         car: string;
         castle: string;
-        "fire station": string;
+        "fire-station": string;
         fountain: string;
         hospital: string;
         house: string;
         library: string;
         park: string;
         playground: string;
-        "police station": string;
+        "police-station": string;
         restaurant: string;
         school: string;
         store: string;
         street: string;
         subway: string;
         taxi: string;
-        "traffic light": string;
+        "traffic-light": string;
         train: string;
       }  
     },
@@ -223,21 +223,21 @@ export type cities = {
         bus: string;
         car: string;
         castle: string;
-        "fire station": string;
+        "fire-station": string;
         fountain: string;
         hospital: string;
         house: string;
         library: string;
         park: string;
         playground: string;
-        "police station": string;
+        "police-station": string;
         restaurant: string;
         school: string;
         store: string;
         street: string;
         subway: string;
         taxi: string;
-        "traffic light": string;
+        "traffic-light": string;
         train: string;
       }  
     },

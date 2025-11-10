@@ -12,7 +12,12 @@ export default function Sidebar() {
     { code: 'en', name: 'English' },
     { code: 'es', name: 'Español' },
     { code: 'fr', name: 'Français' },
-    // add more languages as needed
+    { code: 'pt', name: 'Português' },
+    { code: 'cs', name: 'Čeština' },
+    { code: 'de', name: 'Deutsch' },
+    { code: 'ja', name: '日本語' },
+    { code: 'ar', name: 'العربية' },
+    
   ];
 
   return (
