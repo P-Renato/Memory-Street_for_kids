@@ -214,6 +214,7 @@ export default function GameBoard() {
   }, [language]);
 
   useEffect(() => {
+    console.log("✅ audioCache module loaded:", module);
     import('../lib/audioCache').then((module) => {
       setAudioCache(module.audioCache)
     })
@@ -234,6 +235,7 @@ export default function GameBoard() {
         i === cardIndex ? { ...c, flipped: true } : c
       )
     );
+    console.log(audioCache)
 
     if (audioCache?.[language]?.[card.city]) {
       const audio = audioCache[language][card.city];
