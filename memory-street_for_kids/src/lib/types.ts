@@ -218,3 +218,26 @@ export type cities = {
       }  
     },
 }
+
+export interface Player {
+  _id: string;
+  name: string;
+  email: string;
+  password: string;
+  totalGames: number;
+  totalWins: number;
+  totalScore: number;
+  createdAt: Date;
+}
+
+export interface GameSession {
+  _id?: string;
+  players: {
+    name: string;
+    score: number;
+  }[];
+  winner: string;
+  maxScore: number;
+  playedAt: Date;
+}
+

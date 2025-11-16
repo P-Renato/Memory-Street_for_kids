@@ -1,15 +1,15 @@
 .boardTable {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    grid-template-rows: repeat(8, 1fr);
+    grid-template-columns: repeat(7, 1fr);
+    grid-template-rows: repeat(6, 1fr);
 }
 
 .card {
-  width: 8em;
-  height: 10em;
+  width: 6.8em;
+  height: 9.8em;
   perspective: 1000px; /* for 3D effect */
-  margin: 1em;
-  border: 3px solid red;
+  margin: .4em;
+
 }
 
 .cardInner {
@@ -29,8 +29,8 @@
   backface-visibility: hidden; /* important! */
   border-radius: 10px;
   cursor: pointer;
-  border: 3px solid red !important
-
+  border: 3px solid #dba641;
+  border-radius: 15px;
   
 }
 
@@ -43,9 +43,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 3px solid red;
-
-
 }
 
 
