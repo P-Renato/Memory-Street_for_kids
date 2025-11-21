@@ -38,6 +38,13 @@ export interface GameRoom {
     isPrivate: boolean;
   };
   createdAt: Date;
+  updatedAt?: Date;
+}
+
+export interface CurrentUser {
+  id: string;
+  username: string;
+  email?: string;
 }
 
 export interface CreateRoomData {

@@ -1,12 +1,16 @@
-// app/api/rooms/route.ts - UPDATED
+// app/api/rooms/route.ts
 import { NextResponse } from 'next/server';
 import { createRoom, getRooms } from '@/lib/dbConnect';
-import { GameRoom } from '@/types';
+import { GamePlayer, GameRoom } from '@/types';
 
 export async function GET() {
   try {
     const rooms = await getRooms();
-    return NextResponse.json({ rooms });
+    // Filter out full rooms or finished games if needed
+    const availableRooms = rooms.filter(room => 
+      room.status === 'waiting' && room.players.length < room.maxPlayers
+    );
+    return NextResponse.json({ rooms: availableRooms });
   } catch (error) {
     console.error('Error fetching rooms:', error);
     return NextResponse.json({ error: 'Failed to fetch rooms' }, { status: 500 });
@@ -18,31 +22,34 @@ export async function POST(request: Request) {
     const { name, maxPlayers, language, isPrivate, userId, username } = await request.json();
     
     // Validate input
-    if (!name || !maxPlayers || !language) {
+    if (!name || !maxPlayers || !language || !userId || !username) {
       return NextResponse.json(
-        { error: 'Name, maxPlayers, and language are required' },
+        { error: 'Name, maxPlayers, language, userId, and username are required' },
         { status: 400 }
       );
     }
 
-     const hostUser = userId ? { userId, username } : {
-      userId: 'test-user-' + Date.now(),
-      username: 'TestUser'
+    // Create the first player (host)
+    const hostPlayer: GamePlayer = {
+      userId: userId,
+      username: username,
+      score: 0,
+      isReady: true,
+      isHost: true
     };
 
-    // Create room with proper structure
-    const newRoom: GameRoom = {
-      id: `room-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    // Create room with host as first player
+    const newRoom = {
       name,
-      host: hostUser.userId, // TODO: Get from authentication
+      host: userId,
       players: [{
-        userId: hostUser.userId,
-        username: hostUser.username,
+        userId: userId,
+        username: username,
         score: 0,
         isReady: true,
         isHost: true
       }],
-      maxPlayers: Math.min(maxPlayers, 8), // Cap at 8 players
+      maxPlayers: Math.min(maxPlayers, 4),
       status: 'waiting' as const,
       gameState: {
         cards: [],
@@ -52,7 +59,7 @@ export async function POST(request: Request) {
       },
       settings: {
         language,
-        cardCount: 12, // Default card count
+        cardCount: 12,
         isPrivate: isPrivate || false
       },
       createdAt: new Date()
@@ -62,8 +69,7 @@ export async function POST(request: Request) {
     
     return NextResponse.json({ 
       success: true, 
-      room: result,
-      
+      room: result
     });
     
   } catch (error) {

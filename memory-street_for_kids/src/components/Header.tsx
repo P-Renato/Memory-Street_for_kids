@@ -8,10 +8,16 @@ import { cityByLanguage } from '../lib/db';
 import styles from '@/app/ui/home.module.css';
 import RoomCreationModal from './RoomCreationModal'; 
 import { GameRoom } from '@/types'; 
+import Link from 'next/link';
 
 type Language = keyof typeof cityByLanguage;
 
 type AuthMode = 'login' | 'register';
+
+// interface HeaderProps {
+//   room?: GameRoom;
+//   currentUser?: User
+// }
 
 export default function Header() {
   const { language, setLanguage } = useLanguage();
@@ -151,19 +157,21 @@ export default function Header() {
           {loading ? (
             <div>Loading...</div>
           ) : isAuthenticated ? (
-            <div className={styles.userInfo}>
-              <span>Welcome, {user?.username}! 👋</span>
-              <button 
-                onClick={() => setShowRoomCreation(true)}
-                className={styles.createRoomBtn}
-                style={{ marginLeft: '1rem' }}
-              >
-                Create Room
-              </button>
-              <button onClick={logout} className={styles.logoutBtn}>
-                Logout
-              </button>
-            </div>
+          <div className={styles.userInfo}>
+            <span>Welcome, {user?.username}! 👋</span>
+            <Link href="/rooms" className={styles.createRoomBtn}>
+              Join Rooms
+            </Link>
+            <button 
+              onClick={() => setShowRoomCreation(true)}
+              className={styles.createRoomBtn}
+            >
+              Create Room
+            </button>
+            <button onClick={logout} className={styles.logoutBtn}>
+              Logout
+            </button>
+          </div>
           ) : (
             <div className={styles.guestInfo}>
               <button 
@@ -181,6 +189,7 @@ export default function Header() {
         isOpen={showRoomCreation}
         onClose={() => setShowRoomCreation(false)}
         onRoomCreated={handleRoomCreated}
+        currentUser={user} 
       />
 
       {/* Auth Modal */}

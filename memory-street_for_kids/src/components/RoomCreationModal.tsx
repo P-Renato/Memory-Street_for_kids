@@ -4,12 +4,14 @@ import { useState } from 'react';
 import { useLanguage } from '@/context/LangaugeContext';
 import { cityByLanguage } from '@/lib/db';
 import { GameRoom } from '@/types';
+import { User } from '@/context/AuthContext'
 import styles from '@/app/ui/home.module.css';
 
 interface RoomCreationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onRoomCreated: (room: GameRoom) => void;
+  currentUser?: User | null; 
 }
 
 // Define the language type based on your cityByLanguage structure
@@ -49,16 +51,25 @@ export default function RoomCreationModal({ isOpen, onClose, onRoomCreated }: Ro
     setLoading(true);
     setError('');
 
+
     try {
+      const currentUser = {
+      id: 'temp-user-id', // Replace with actual user ID from auth
+      username: 'temp-username' // Replace with actual username
+    };
       const response = await fetch('/api/rooms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+        ...formData,
+        userId: currentUser.id,
+        username: currentUser.username
+      }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error);
+        throw new Error(errorData.error || `Failed to create room (${response.status})`);
       }
 
       const result = await response.json();

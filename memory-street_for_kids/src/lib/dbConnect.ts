@@ -1,6 +1,6 @@
 
 import { MongoClient, Db } from 'mongodb';
-import { GameRoom } from '@/types';
+import { GameRoom, GamePlayer } from '@/types';
 import dotenv from "dotenv";
 
 dotenv.config({ path: "./config.env" });
@@ -92,8 +92,41 @@ export async function getRooms(): Promise<GameRoom[]> {
 
 export async function getRoomById(roomId: string): Promise<GameRoom | null> {
   const { db } = await connectToDatabase();
-  const room = await db.collection('rooms').findOne({ id: roomId });
-  return room as GameRoom | null;
+  
+  let room;
+  
+  try {
+    // Try to find by MongoDB _id first
+    const { ObjectId } = await import('mongodb');
+    room = await db.collection('rooms').findOne({ _id: new ObjectId(roomId) });
+  } catch {
+    // If not a valid ObjectId, try by custom id field
+    room = await db.collection('rooms').findOne({ id: roomId });
+  }
+  
+  if (!room) return null;
+  
+  // Transform to GameRoom format
+  const gameRoom: GameRoom = {
+    // _id: room._id,
+    id: room._id?.toString() || room.id,
+    name: room.name,
+    host: room.host,
+    players: room.players || [],
+    maxPlayers: room.maxPlayers,
+    status: room.status,
+    gameState: room.gameState || {
+      cards: [],
+      currentTurn: '',
+      matchedPairs: 0,
+      isGameComplete: false
+    },
+    settings: room.settings,
+    createdAt: room.createdAt,
+    updatedAt: room.updatedAt
+  };
+  
+  return gameRoom;
 }
 
 export async function updateRoom(roomId: string, updates: Partial<GameRoom>) {
