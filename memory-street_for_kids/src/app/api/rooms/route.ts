@@ -1,28 +1,66 @@
-// app/api/rooms/route.ts
+// app/api/rooms/route.ts - MAKE SURE THIS IS CORRECT
 import { NextResponse } from 'next/server';
 import { createRoom, getRooms } from '@/lib/dbConnect';
 import { GamePlayer, GameRoom } from '@/types';
 
-export async function GET() {
+// This should NOT have params - it's for /api/rooms (no ID)
+export async function GET(request: Request) {
   try {
+    console.log('🔍 GET /api/rooms called');
+    const userId = request.headers.get('x-user-id');
+    console.log('🔍 Current user ID from headers:', userId);
+    
     const rooms = await getRooms();
-    // Filter out full rooms or finished games if needed
-    const availableRooms = rooms.filter(room => 
-      room.status === 'waiting' && room.players.length < room.maxPlayers
-    );
-    return NextResponse.json({ rooms: availableRooms });
+    console.log('🔍 Rooms fetched from DB:', rooms.length);
+    
+    console.log('🔍 ALL rooms from DB:');
+    rooms.forEach(room => {
+      console.log(`   - Room: ${room.name}, Status: ${room.status}, Players: ${room.players.length}/${room.maxPlayers}, ID: ${room.id}`);
+    });
+
+    const availableRooms = rooms.filter(room => {
+      const isAvailable = room.status === 'waiting' && room.players.length < room.maxPlayers;
+      
+      // Check if the current user is already in this room
+      const userIsInRoom = userId ? 
+        room.players.some(player => player.userId === userId) : 
+        false;
+      
+      console.log(`   - ${room.name}: available=${isAvailable}, userInRoom=${userIsInRoom}, show=${isAvailable || userIsInRoom}`);
+      
+      // Show room if: available OR user is already in it
+      return isAvailable || userIsInRoom;
+    });
+    
+    console.log('🔍 Available rooms:', availableRooms.length);
+    
+    return NextResponse.json({ 
+      success: true,
+      rooms: availableRooms,
+      total: availableRooms.length
+    });
+    
   } catch (error) {
-    console.error('Error fetching rooms:', error);
-    return NextResponse.json({ error: 'Failed to fetch rooms' }, { status: 500 });
+    console.error('❌ Error fetching rooms:', error);
+    return NextResponse.json({ 
+      error: 'Failed to fetch rooms',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
   try {
-    const { name, maxPlayers, language, isPrivate, userId, username } = await request.json();
+    console.log('🔍 POST /api/rooms called');
     
+    const body = await request.json();
+    console.log('🔍 Request body:', body);
+    
+    const { name, maxPlayers, language, isPrivate, userId, username } = body;
+
     // Validate input
     if (!name || !maxPlayers || !language || !userId || !username) {
+      console.log('❌ Missing required fields');
       return NextResponse.json(
         { error: 'Name, maxPlayers, language, userId, and username are required' },
         { status: 400 }
@@ -42,13 +80,7 @@ export async function POST(request: Request) {
     const newRoom = {
       name,
       host: userId,
-      players: [{
-        userId: userId,
-        username: username,
-        score: 0,
-        isReady: true,
-        isHost: true
-      }],
+      players: [hostPlayer],
       maxPlayers: Math.min(maxPlayers, 4),
       status: 'waiting' as const,
       gameState: {
@@ -65,7 +97,9 @@ export async function POST(request: Request) {
       createdAt: new Date()
     };
 
+    console.log('🔍 Creating room:', newRoom);
     const result = await createRoom(newRoom);
+    console.log('✅ Room created:', result);
     
     return NextResponse.json({ 
       success: true, 
@@ -73,7 +107,7 @@ export async function POST(request: Request) {
     });
     
   } catch (error) {
-    console.error('Error creating room:', error);
+    console.error('❌ Error creating room:', error);
     return NextResponse.json({ error: 'Failed to create room' }, { status: 500 });
   }
 }

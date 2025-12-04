@@ -29,7 +29,14 @@ export default function RoomsPage() {
   const fetchRooms = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/rooms');
+
+      const headers: HeadersInit = {};
+      if (user?.id) {
+        headers['x-user-id'] = user.id;
+      }
+      const response = await fetch('/api/rooms', {
+        headers: headers
+      });
       
       if (!response.ok) {
         throw new Error('Failed to fetch rooms');
@@ -49,6 +56,20 @@ const handleJoinRoom = async (room: GameRoom) => {
   try {
     console.log('🔍 Attempting to join room:', room.id, room.name);
     
+    const isUserInRoom = room.players.some(player => player.userId === user?.id);
+    if(isUserInRoom) {
+      console.log('🔍 User already in room, skipping join request');
+      // If already in room, just navigate to it
+      router.push(`/room/${room.id}`);
+      return;
+    }
+    if(room.players.length >= room.maxPlayers){
+      throw new Error('Room is full');
+    }
+    if (room.status !== 'waiting') {
+      throw new Error('Game has already started');
+    }
+
     // Use the actual logged-in user from auth context
     if (!user) {
       throw new Error('You must be logged in to join a room');
@@ -82,6 +103,8 @@ const handleJoinRoom = async (room: GameRoom) => {
     console.log('✅ Successfully joined room:', result);
     
     alert(`Successfully joined room: ${room.name}`);
+
+    router.push(`/room/${room.id}`);
     
   } catch (err) {
     console.error('❌ Error joining room:', err);
@@ -135,7 +158,7 @@ const handleJoinRoom = async (room: GameRoom) => {
                 <div>
                   <h3 style={{ margin: '0 0 0.5rem 0' }}>{room.name}</h3>
                   <p style={{ margin: '0', color: '#666' }}>
-                    Host: {room.players.find(p => p.isHost)?.username || 'Unknown'}
+                    Host: {room.players.find(p => p.isHost)?.username || room.players[0]?.username || 'Unknown'}
                   </p>
                 </div>
                 <span style={{ 

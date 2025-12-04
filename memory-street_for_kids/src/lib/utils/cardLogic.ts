@@ -28,7 +28,20 @@ export function initializeCards(language: string): Card[] {
   }));
 }
 
+// In cardLogic.ts - update handleCardMatch function
 export function handleCardMatch(cards: Card[], firstCardIndex: number, secondCardIndex: number): MatchResult {
+  // ADD VALIDATION
+  if (!cards[firstCardIndex] || !cards[secondCardIndex]) {
+    console.error('❌ Invalid card indices:', { firstCardIndex, secondCardIndex, cardsLength: cards.length });
+    
+    // Return cards unchanged
+    return {
+      updatedCards: cards,
+      matchedPairs: cards.filter(card => card.matched).length / 2,
+      isGameComplete: false
+    };
+  }
+
   const isMatch = cards[firstCardIndex].city === cards[secondCardIndex].city;
   
   if (isMatch) {

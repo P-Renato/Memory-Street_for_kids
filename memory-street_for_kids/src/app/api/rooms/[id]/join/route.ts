@@ -1,7 +1,8 @@
 // app/api/rooms/[id]/join/route.ts
 import { NextResponse } from 'next/server';
 import { getRoomById, updateRoom } from '@/lib/dbConnect';
-import { GamePlayer } from '@/types';
+import { GamePlayer, GameRoom } from '@/types';
+import { initializeCards } from '@/lib/utils/cardLogic'; // Import your existing function
 
 export async function POST(
   request: Request,
@@ -12,7 +13,6 @@ export async function POST(
     console.log('🎯 JOIN ROUTE CALLED! Room ID:', id);
     
     const { userId, username } = await request.json();
-
     console.log('🎯 Join request data:', { roomId: id, userId, username });
 
     if (!userId || !username) {
@@ -55,14 +55,43 @@ export async function POST(
 
     // Update room with new player
     const updatedPlayers = [...room.players, newPlayer];
-    await updateRoom(id, { players: updatedPlayers });
+    
+    let updateData: Partial<GameRoom> = { players: updatedPlayers };
+    
+    
+    // Auto-start game if room is now full
+    if (updatedPlayers.length >= room.maxPlayers) {
+      console.log('🚀 Room is full - auto-starting game!');
+      console.log('🔍 Before update - Room status:', room.status);
+      
+      // Use your existing card initialization logic
+      const gameCards = initializeCards(room.settings.language);
+      
+      updateData = {
+        ...updateData,
+        status: 'playing',
+        gameState: {
+          cards: gameCards, // Use your existing card generation
+          currentTurn: room.players[0]?.userId || updatedPlayers[0].userId, // First player starts
+          matchedPairs: 0,
+          isGameComplete: false
+        }
+      };
+      console.log('🔍 After update - Room status will be:', updateData.status);
+    }
+
+    console.log('🔍 Updating room with:', updateData);
+    await updateRoom(id, updateData);
 
     console.log('✅ Player joined room successfully');
+
+    const updatedRoom = await getRoomById(room.id);
+    console.log('🔍 Room after update - Status:', updatedRoom?.status, 'Players:', updatedRoom?.players.length);
     
     return NextResponse.json({ 
       success: true, 
       player: newPlayer,
-      room: { ...room, players: updatedPlayers }
+      room: { ...room, ...updateData }
     });
 
   } catch (error) {

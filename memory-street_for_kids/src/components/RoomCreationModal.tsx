@@ -24,7 +24,7 @@ interface RoomFormData {
   isPrivate: boolean;
 }
 
-export default function RoomCreationModal({ isOpen, onClose, onRoomCreated }: RoomCreationModalProps) {
+export default function RoomCreationModal({ isOpen, onClose, onRoomCreated, currentUser }: RoomCreationModalProps) {
   const { language } = useLanguage();
   const [formData, setFormData] = useState<RoomFormData>({
     name: '',
@@ -47,41 +47,44 @@ export default function RoomCreationModal({ isOpen, onClose, onRoomCreated }: Ro
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+  e.preventDefault();
+  setLoading(true);
+  setError('');
 
+  try {
+    if (!currentUser) {
+      throw new Error('You must be logged in to create a room');
+    }
 
-    try {
-      const currentUser = {
-      id: 'temp-user-id', // Replace with actual user ID from auth
-      username: 'temp-username' // Replace with actual username
-    };
-      const response = await fetch('/api/rooms', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+    console.log('🔍 Creating room with REAL user:', currentUser);
+
+    const response = await fetch('/api/rooms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
         ...formData,
         userId: currentUser.id,
-        username: currentUser.username
+        username: currentUser.username 
       }),
-      });
+    });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `Failed to create room (${response.status})`);
-      }
-
-      const result = await response.json();
-      onRoomCreated(result.room);
-      onClose();
-      
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setLoading(false);
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || `Failed to create room (${response.status})`);
     }
-  };
+
+    const result = await response.json();
+    console.log('✅ Room created successfully:', result);
+    onRoomCreated(result.room);
+    onClose();
+    
+  } catch (err) {
+    setError((err as Error).message);
+    console.error('❌ Error creating room:', err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   if (!isOpen) return null;
 

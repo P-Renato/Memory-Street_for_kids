@@ -131,8 +131,23 @@ export async function getRoomById(roomId: string): Promise<GameRoom | null> {
 
 export async function updateRoom(roomId: string, updates: Partial<GameRoom>) {
   const { db } = await connectToDatabase();
-  return await db.collection('rooms').updateOne(
-    { id: roomId },
+  
+  let filter;
+  
+  try {
+    // Try to use MongoDB _id first
+    const { ObjectId } = await import('mongodb');
+    filter = { _id: new ObjectId(roomId) };
+  } catch {
+    // If not a valid ObjectId, use custom id field
+    filter = { id: roomId };
+  }
+  
+  console.log('🔍 [updateRoom] Using filter:', filter);
+  console.log('🔍 [updateRoom] Updates:', updates);
+  
+  const result = await db.collection('rooms').updateOne(
+    filter,
     { 
       $set: { 
         ...updates,
@@ -140,4 +155,21 @@ export async function updateRoom(roomId: string, updates: Partial<GameRoom>) {
       } 
     }
   );
+  
+  console.log('🔍 [updateRoom] Update result:', {
+    matchedCount: result.matchedCount,
+    modifiedCount: result.modifiedCount,
+    acknowledged: result.acknowledged
+  });
+  
+  if (result.matchedCount === 0) {
+    console.error('❌ [updateRoom] No room found with filter:', filter);
+    throw new Error('Room not found for update');
+  }
+  
+  if (result.modifiedCount === 0) {
+    console.warn('⚠️ [updateRoom] Room found but no changes made');
+  }
+  
+  return result;
 }
