@@ -1,16 +1,17 @@
-// app/rooms/page.tsx
+// app/rooms/page.tsx - UPDATED WITH TOKEN SUPPORT
 "use client";
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { GameRoom } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
+import styles from '@/app/ui/home.module.css';
 
 export default function RoomsPage() {
   const [rooms, setRooms] = useState<GameRoom[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, token } = useAuth();
   const router = useRouter();
 
   // Redirect if not authenticated
@@ -24,14 +25,30 @@ export default function RoomsPage() {
     if (isAuthenticated) {
       fetchRooms();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, token]);
 
   const fetchRooms = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/rooms');
+      
+      // Prepare headers with token
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      const response = await fetch('/api/rooms', {
+        headers,
+      });
       
       if (!response.ok) {
+        if (response.status === 401) {
+          setError('Session expired. Please log in again.');
+          return;
+        }
         throw new Error('Failed to fetch rooms');
       }
       
@@ -44,51 +61,55 @@ export default function RoomsPage() {
     }
   };
 
-  // In app/rooms/page.tsx - FIXED handleJoinRoom
-const handleJoinRoom = async (room: GameRoom) => {
-  try {
-    console.log('🔍 Attempting to join room:', room.id, room.name);
-    
-    // Use the actual logged-in user from auth context
-    if (!user) {
-      throw new Error('You must be logged in to join a room');
-    }
-
-    const userData = {
-      userId: user.id, 
-      username: user.username 
-    };
-
-    console.log('🔍 Sending join request with REAL user:', userData);
-
-    const response = await fetch(`/api/rooms/${room.id}/join`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(userData),
-    });
-
-    console.log('🔍 Join response status:', response.status);
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        throw new Error('Join room API not found. Check server routes.');
-      }
+  const handleJoinRoom = async (room: GameRoom) => {
+    try {
+      console.log('🔍 Attempting to join room:', room.id, room.name);
       
-      const errorData = await response.json();
-      throw new Error(errorData.error || `Failed to join room (${response.status})`);
-    }
+      if (!user || !token) {
+        throw new Error('You must be logged in to join a room');
+      }
 
-    const result = await response.json();
-    console.log('✅ Successfully joined room:', result);
-    
-    alert(`Successfully joined room: ${room.name}`);
-    
-  } catch (err) {
-    console.error('❌ Error joining room:', err);
-    const errorMessage = (err as Error).message;
-    setError(`Failed to join room: ${errorMessage}`);
-  }
-};
+      const userData = {
+        userId: user.id, 
+        username: user.username 
+      };
+
+      console.log('🔍 Sending join request with user:', userData);
+
+      const response = await fetch(`/api/rooms/${room.id}/join`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(userData),
+      });
+
+      console.log('🔍 Join response status:', response.status);
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('Join room API not found. Check server routes.');
+        }
+        
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Failed to join room (${response.status})`);
+      }
+
+      const result = await response.json();
+      console.log('✅ Successfully joined room:', result);
+      
+      alert(`Successfully joined room: ${room.name}`);
+      
+      // Redirect to the game room
+      window.location.href = `/game/${room.id}`;
+      
+    } catch (err) {
+      console.error('❌ Error joining room:', err);
+      const errorMessage = (err as Error).message;
+      setError(`Failed to join room: ${errorMessage}`);
+    }
+  };
 
   // Add these return statements for different states
   if (!isAuthenticated) {
@@ -103,7 +124,7 @@ const handleJoinRoom = async (room: GameRoom) => {
   if (loading) return <div style={{ padding: '2rem', textAlign: 'center' }}>Loading rooms...</div>;
   if (error) return <div style={{ padding: '2rem', textAlign: 'center', color: 'red' }}>Error: {error}</div>;
 
-  // Main return statement - THIS WAS MISSING!
+  // Main return statement
   return (
     <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>

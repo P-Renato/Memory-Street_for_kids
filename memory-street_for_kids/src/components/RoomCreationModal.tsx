@@ -1,83 +1,91 @@
-// components/RoomCreationModal.tsx - FIXED TYPES
-"use client";
+// components/RoomCreationModal.tsx - FIXED VERSION
+'use client';
 import { useState } from 'react';
-import { useLanguage } from '@/context/LangaugeContext';
-import { cityByLanguage } from '@/lib/db';
 import { GameRoom } from '@/types';
-import { User } from '@/context/AuthContext'
+import { useAuth } from '@/context/AuthContext'; 
 import styles from '@/app/ui/home.module.css';
 
 interface RoomCreationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onRoomCreated: (room: GameRoom) => void;
-  currentUser?: User | null; 
 }
 
-// Define the language type based on your cityByLanguage structure
-type LanguageKey = keyof typeof cityByLanguage;
-
-interface RoomFormData {
-  name: string;
-  maxPlayers: number;
-  language: LanguageKey;
-  isPrivate: boolean;
-}
-
-export default function RoomCreationModal({ isOpen, onClose, onRoomCreated }: RoomCreationModalProps) {
-  const { language } = useLanguage();
-  const [formData, setFormData] = useState<RoomFormData>({
+export default function RoomCreationModal({ 
+  isOpen, 
+  onClose, 
+  onRoomCreated,
+}: RoomCreationModalProps) {
+  const { user, token } = useAuth(); 
+  const [roomData, setRoomData] = useState({
     name: '',
     maxPlayers: 4,
-    language: language as LanguageKey, // Cast to LanguageKey
+    language: 'en',
     isPrivate: false
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const languages: { code: LanguageKey; name: string }[] = [
-    { code: 'en', name: 'English' },
-    { code: 'es', name: 'Español' },
-    { code: 'fr', name: 'Français' },
-    { code: 'pt', name: 'Português' },
-    { code: 'cs', name: 'Čeština' },
-    { code: 'de', name: 'Deutsch' },
-    { code: 'ja', name: '日本語' },
-    { code: 'ar', name: 'العربية' }
-  ];
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!user || !token) {
+      setError('You must be logged in to create a room');
+      return;
+    }
+
+    if (!roomData.name.trim()) {
+      setError('Room name is required');
+      return;
+    }
+
     setLoading(true);
     setError('');
 
-
     try {
-      const currentUser = {
-      id: 'temp-user-id', // Replace with actual user ID from auth
-      username: 'temp-username' // Replace with actual username
-    };
-      const response = await fetch('/api/rooms', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-        ...formData,
-        userId: currentUser.id,
-        username: currentUser.username
-      }),
+      console.log('📤 Creating room with data:', {
+        ...roomData,
+        userId: user.id,
+        username: user.username
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `Failed to create room (${response.status})`);
-      }
+      const response = await fetch('/api/rooms', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`, 
+        },
+        body: JSON.stringify({
+          ...roomData,
+          userId: user.id,
+          username: user.username
+        }),
+      });
 
       const result = await response.json();
-      onRoomCreated(result.room);
-      onClose();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create room');
+      }
+
+      console.log('✅ Room created response:', result);
       
-    } catch (err) {
-      setError((err as Error).message);
+      if (result.success && result.room) {
+        onRoomCreated(result.room);
+        onClose();
+        // Clear form
+        setRoomData({
+          name: '',
+          maxPlayers: 4,
+          language: 'en',
+          isPrivate: false
+        });
+      } else {
+        throw new Error('Invalid response from server');
+      }
+    } catch (error) {
+      console.error('❌ Error creating room:', error);
+      setError((error as Error).message);
     } finally {
       setLoading(false);
     }
@@ -90,55 +98,102 @@ export default function RoomCreationModal({ isOpen, onClose, onRoomCreated }: Ro
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         <button className={styles.modalClose} onClick={onClose}>×</button>
         
-        <h3>Create Game Room</h3>
+        <h3>Create New Room</h3>
         
-        {error && <div className={styles.errorMessage}>{error}</div>}
+        {error && (
+          <div className={styles.errorMessage}>{error}</div>
+        )}
         
-        <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            placeholder="Room Name"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            required
-            className={styles.authInput}
-          />
-          
-          <select
-            value={formData.maxPlayers}
-            onChange={(e) => setFormData({ ...formData, maxPlayers: parseInt(e.target.value) })}
-            className={styles.authInput}
-          >
-            <option value={2}>2 Players</option>
-            <option value={3}>3 Players</option>
-            <option value={4}>4 Players</option>
-            <option value={6}>6 Players</option>
-            <option value={8}>8 Players</option>
-          </select>
-          
-          <select
-            value={formData.language}
-            onChange={(e) => setFormData({ ...formData, language: e.target.value as LanguageKey })}
-            className={styles.authInput}
-          >
-            {languages.map(lang => (
-              <option key={lang.code} value={lang.code}>{lang.name}</option>
-            ))}
-          </select>
-          
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '1rem 0' }}>
-            <input
-              type="checkbox"
-              checked={formData.isPrivate}
-              onChange={(e) => setFormData({ ...formData, isPrivate: e.target.checked })}
-            />
-            Private Room (Requires invite)
-          </label>
-          
-          <button type="submit" disabled={loading} className={styles.authButton}>
-            {loading ? 'Creating Room...' : 'Create Room'}
-          </button>
-        </form>
+        {!user ? (
+          <div className={styles.authRequired}>
+            <p>You must be logged in to create a room.</p>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit}>
+            <div className={styles.formGroup}>
+              <label htmlFor="roomName">Room Name</label>
+              <input
+                id="roomName"
+                type="text"
+                placeholder="Enter room name"
+                value={roomData.name}
+                onChange={(e) => setRoomData({ ...roomData, name: e.target.value })}
+                required
+                className={styles.formInput}
+                disabled={loading}
+              />
+            </div>
+            
+            <div className={styles.formGroup}>
+              <label htmlFor="maxPlayers">Max Players (2-4)</label>
+              <select
+                id="maxPlayers"
+                value={roomData.maxPlayers}
+                onChange={(e) => setRoomData({ ...roomData, maxPlayers: parseInt(e.target.value) })}
+                className={styles.formSelect}
+                disabled={loading}
+              >
+                <option value={2}>2 Players</option>
+                <option value={3}>3 Players</option>
+                <option value={4}>4 Players</option>
+              </select>
+            </div>
+            
+            <div className={styles.formGroup}>
+              <label htmlFor="language">Game Language</label>
+              <select
+                id="language"
+                value={roomData.language}
+                onChange={(e) => setRoomData({ ...roomData, language: e.target.value })}
+                className={styles.formSelect}
+                disabled={loading}
+              >
+                <option value="en">English</option>
+                <option value="es">Español</option>
+                <option value="fr">Français</option>
+                <option value="pt">Português</option>
+                <option value="cs">Čeština</option>
+                <option value="de">Deutsch</option>
+                <option value="ja">日本語</option>
+                <option value="ar">العربية</option>
+              </select>
+            </div>
+            
+            <div className={styles.formGroup}>
+              <label className={styles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  checked={roomData.isPrivate}
+                  onChange={(e) => setRoomData({ ...roomData, isPrivate: e.target.checked })}
+                  disabled={loading}
+                />
+                Private Room (Requires invite)
+              </label>
+            </div>
+            
+            <div className={styles.formFooter}>
+              <button
+                type="button"
+                onClick={onClose}
+                className={styles.cancelButton}
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading || !user}
+                className={styles.submitButton}
+              >
+                {loading ? 'Creating...' : 'Create Room'}
+              </button>
+            </div>
+          </form>
+        )}
+        
+        <div className={styles.userInfo}>
+          <p>Creating room as: <strong>{user?.username || 'Not logged in'}</strong></p>
+        </div>
       </div>
     </div>
   );

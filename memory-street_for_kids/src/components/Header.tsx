@@ -126,9 +126,22 @@ export default function Header() {
 
   const handleRoomCreated = (room: GameRoom) => {
     console.log('Room created:', room);
-    // TODO: Redirect to room page or show room lobby
-    // For now, just show an alert
+    if (!room || !room.name) {
+      console.error('❌ Room data is invalid:', room);
+      alert('Room created but data is incomplete. Please check console.');
+      return;
+    }    // For now, just show an alert
     alert(`Room "${room.name}" created successfully!`);
+    if (room.id) {
+      console.log('🔗 Redirecting to room:', room.id);
+      // Use Next.js router to redirect
+      // router.push(`/game/${room.id}`);
+      // For now, show a link
+      const redirect = window.confirm(`Room created! Go to room "${room.name}"?`);
+      if (redirect && room.id) {
+        window.location.href = `/game/${room.id}`;
+      }
+    }
   };
 
   
@@ -189,7 +202,6 @@ export default function Header() {
         isOpen={showRoomCreation}
         onClose={() => setShowRoomCreation(false)}
         onRoomCreated={handleRoomCreated}
-        currentUser={user} 
       />
 
       {/* Auth Modal */}

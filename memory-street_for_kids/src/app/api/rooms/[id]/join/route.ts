@@ -1,7 +1,8 @@
-// app/api/rooms/[id]/join/route.ts
-import { NextResponse } from 'next/server';
+// app/api/rooms/[id]/join/route.ts - UPDATED
+import { NextRequest, NextResponse } from 'next/server';
 import { getRoomById, updateRoom } from '@/lib/dbConnect';
 import { GamePlayer } from '@/types';
+import { authenticateRequest } from '@/lib/authMiddleware';
 
 export async function POST(
   request: Request,
@@ -11,16 +12,26 @@ export async function POST(
     const { id } = await params;
     console.log('🎯 JOIN ROUTE CALLED! Room ID:', id);
     
-    const { userId, username } = await request.json();
-
-    console.log('🎯 Join request data:', { roomId: id, userId, username });
-
-    if (!userId || !username) {
-      return NextResponse.json(
-        { error: 'User ID and username are required' },
-        { status: 400 }
-      );
+    // Authenticate the request
+    const auth = authenticateRequest(request as NextRequest); 
+    
+    if (!auth.success) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    
+    // Now auth.userId is guaranteed to be string (if success is true)
+    const userId = auth.userId as string;
+    
+    const { username } = await request.json();
+    
+    console.log('🎯 Join request data:', { 
+      roomId: id, 
+      userId, 
+      username: username || auth.email?.split('@')[0] 
+    });
+
+    // Use provided username or default from email
+    const displayUsername = username || auth.email?.split('@')[0] || 'Player';
 
     const room = await getRoomById(id);
     console.log('🔍 Found room:', room ? room.id : 'null');
@@ -41,13 +52,17 @@ export async function POST(
 
     // Check if user is already in the room
     if (room.players.some(player => player.userId === userId)) {
-      return NextResponse.json({ error: 'You are already in this room' }, { status: 400 });
+      return NextResponse.json({ 
+        success: true, 
+        message: 'Already in room',
+        player: room.players.find(p => p.userId === userId)
+      });
     }
 
     // Create new player
     const newPlayer: GamePlayer = {
-      userId,
-      username,
+      userId: userId!, 
+      username: displayUsername,
       score: 0,
       isReady: false,
       isHost: false

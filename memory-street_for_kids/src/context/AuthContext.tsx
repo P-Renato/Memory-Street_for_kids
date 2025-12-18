@@ -1,34 +1,61 @@
-
-// context/AuthContext.tsx
+// context/AuthContext.tsx - Updated with proper token verification
 'use client';
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-// Simple interface for now - we'll expand later
 export interface User {
   id: string;
   username: string;
   email: string;
 }
 
-interface AuthContextType {
+export interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (data: { login: string; password: string }) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
+  token: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Check if user is logged in on app start
+
+  // Initialize from localStorage
   useEffect(() => {
-    // TODO: Check for existing token and validate it
+    const storedUser = localStorage.getItem('user');
+    const storedToken = localStorage.getItem('token');
+    
+    if (storedUser && storedToken) {
+      try {
+        setUser(JSON.parse(storedUser));
+        setToken(storedToken);
+      } catch (error) {
+        console.error('Error parsing stored auth:', error);
+        clearStoredAuth();
+      }
+    }
+    
     setLoading(false);
   }, []);
+
+  const clearStoredAuth = () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    setUser(null);
+    setToken(null);
+  };
+
+  const saveAuth = (userData: User, authToken: string) => {
+    localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('token', authToken);
+    setUser(userData);
+    setToken(authToken);
+  };
 
   const login = async (loginData: { login: string; password: string }) => {
     setLoading(true);
@@ -37,7 +64,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(loginData),
-        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -46,25 +72,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       const result = await response.json();
-      setUser(result.user);
+
+      if (result.success && result.user && result.token) {
+        saveAuth(result.user, result.token);
+      } else {
+        throw new Error('Invalid response from server');
+      }
     } catch (error) {
       throw new Error((error as Error).message || 'Login failed');
-    }finally {
+    } finally {
       setLoading(false);
     }
   };
 
   const logout = async () => {
-    try {
-        await fetch('/api/auth/logout', {
-          method: 'POST',
-          credentials: 'include',
-        });
-    } catch (error) {
-        console.error('Logout error:', error);
-    } finally {
-      setUser(null);
-    }
+    clearStoredAuth();
+    fetch('/api/auth/logout').catch(console.error)
   };
 
   const value = {
@@ -72,7 +95,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loading,
     login,
     logout,
-    isAuthenticated: !!user,
+    isAuthenticated: !!user && !!token,
+    token,
   };
 
   return (

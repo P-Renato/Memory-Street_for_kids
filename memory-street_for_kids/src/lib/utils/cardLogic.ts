@@ -14,11 +14,19 @@ export interface MatchResult {
   isGameComplete: boolean;
 }
 
-export function initializeCards(language: string): Card[] {
+export function initializeCards(language: string, cardCount?: number): Card[] {
   const languageData = cityByLanguage[language as keyof typeof cityByLanguage];
   const cities = Object.keys(languageData.items);
+  
+  // If cardCount is provided, limit the number of cities
+  let selectedCities = cities;
+  if (cardCount && cardCount < cities.length) {
+    selectedCities = cities.slice(0, cardCount);
+  }
+  
   const duplicated = [...cities, ...cities];
   const shuffled = duplicated.sort(() => Math.random() - 0.5);
+  
   
   return shuffled.map((city, i) => ({ 
     id: i, 

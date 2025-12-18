@@ -1,15 +1,29 @@
-// app/api/rooms/route.ts
-import { NextResponse } from 'next/server';
-import { createRoom, getRooms } from '@/lib/dbConnect';
-import { GamePlayer, GameRoom } from '@/types';
+// app/api/rooms/route.ts - Updated to handle token auth
+import { NextResponse, NextRequest } from 'next/server';
+import { getRooms, createRoom } from '@/lib/dbConnect';
+import { authenticateRequest } from '@/lib/authMiddleware';
+import { AuthContextType } from '@/context/AuthContext';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    // Authenticate the request
+    const auth = authenticateRequest(request as NextRequest);
+    
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error || 'Authentication required' },
+        { status: 401 }
+      );
+    }
+    
+    console.log('🎯 GET rooms - Authenticated user:', auth.userId);
+    
     const rooms = await getRooms();
     // Filter out full rooms or finished games if needed
     const availableRooms = rooms.filter(room => 
       room.status === 'waiting' && room.players.length < room.maxPlayers
     );
+    
     return NextResponse.json({ rooms: availableRooms });
   } catch (error) {
     console.error('Error fetching rooms:', error);
@@ -19,7 +33,27 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    // Authenticate the request
+    const auth = authenticateRequest(request as NextRequest);
+    
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error || 'Authentication required' },
+        { status: 401 }
+      );
+    }
+    
     const { name, maxPlayers, language, isPrivate, userId, username } = await request.json();
+    
+    console.log('📝 Creating room - Authenticated user:', auth.userId, 'Request userId:', userId);
+    
+    // Validate that the authenticated user matches the request userId
+    if (auth.userId !== userId) {
+      return NextResponse.json(
+        { error: 'User ID mismatch' },
+        { status: 403 }
+      );
+    }
     
     // Validate input
     if (!name || !maxPlayers || !language || !userId || !username) {
@@ -30,7 +64,7 @@ export async function POST(request: Request) {
     }
 
     // Create the first player (host)
-    const hostPlayer: GamePlayer = {
+    const hostPlayer = {
       userId: userId,
       username: username,
       score: 0,
@@ -42,20 +76,16 @@ export async function POST(request: Request) {
     const newRoom = {
       name,
       host: userId,
-      players: [{
-        userId: userId,
-        username: username,
-        score: 0,
-        isReady: true,
-        isHost: true
-      }],
+      players: [hostPlayer],
       maxPlayers: Math.min(maxPlayers, 4),
       status: 'waiting' as const,
       gameState: {
         cards: [],
         currentTurn: '',
         matchedPairs: 0,
-        isGameComplete: false
+        isGameComplete: false,
+        flippedCards: [],
+        lastMove: null
       },
       settings: {
         language,

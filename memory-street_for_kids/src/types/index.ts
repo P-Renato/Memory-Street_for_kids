@@ -21,6 +21,14 @@ export interface GameState {
   currentTurn: string;
   matchedPairs: number;
   isGameComplete: boolean;
+
+  flippedCards?: number[]; // Track indices of currently flipped cards
+  lastMove?: {           // Track the last move made
+    userId: string;
+    cardIndex: number;
+    cardId: number;      // Changed from string to number to match Card.id
+    timestamp: number;
+  } | null;
 }
 
 export interface GameRoom {
@@ -59,7 +67,7 @@ export interface JoinRoomData {
   userId: string;
 }
 
-// WebSocket Types - FIXED (no more 'any')
+// WebSocket Types 
 export type WebSocketEvent = 
   | { type: 'ROOM_CREATED'; room: GameRoom }
   | { type: 'PLAYER_JOINED'; player: GamePlayer; roomId: string }

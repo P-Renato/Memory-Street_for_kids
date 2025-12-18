@@ -254,3 +254,428 @@
   color: #005a9e;
 }
 
+/* Game Room Styles */
+.gameRoomContainer {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.gameRoomMain {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.roomHeader {
+  background: white;
+  border-radius: 15px;
+  padding: 20px 30px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.roomHeader h1 {
+  margin: 0;
+  color: #333;
+}
+
+.roomMeta {
+  display: flex;
+  gap: 15px;
+  margin-top: 10px;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.statusBadge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.statusBadge.waiting {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.statusBadge.playing {
+  background: #e8f5e9;
+  color: #388e3c;
+}
+
+.roomActions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.startGameButton {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 25px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.startGameButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+}
+
+.startGameButton:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.playerCount {
+  background: #f0f2f5;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: bold;
+  color: #555;
+}
+
+/* Room Content Layout */
+.roomContent {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 20px;
+}
+
+.playersSidebar {
+  background: white;
+  border-radius: 15px;
+  padding: 20px;
+  height: fit-content;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.playersSidebar h2 {
+  margin-top: 0;
+  color: #333;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f0f2f5;
+}
+
+.playersList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.playerCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.playerCard.host {
+  border-color: #1976d2;
+  background: #e3f2fd;
+}
+
+.playerCard.currentPlayer {
+  border-color: #4caf50;
+  background: #e8f5e9;
+}
+
+.playerAvatar {
+  width: 40px;
+  height: 40px;
+  background: #1976d2;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.playerCard.host .playerAvatar {
+  background: #1976d2;
+}
+
+.playerCard.currentPlayer .playerAvatar {
+  background: #4caf50;
+}
+
+.playerInfo {
+  flex: 1;
+}
+
+.playerName {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.hostBadge {
+  background: #1976d2;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: bold;
+}
+
+.youBadge {
+  background: #4caf50;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: bold;
+}
+
+.playerStats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.readyStatus {
+  color: #ff6b6b;
+}
+
+.readyStatus.ready {
+  color: #4caf50;
+}
+
+.roomIdSection {
+  padding-top: 20px;
+  border-top: 2px solid #f0f2f5;
+}
+
+.roomIdSection p {
+  margin: 0 0 8px 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.roomId {
+  background: #f8f9fa;
+  padding: 10px;
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 0.9rem;
+  word-break: break-all;
+  display: block;
+}
+
+/* Game Area */
+.gameArea {
+  background: white;
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.waitingRoom {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.waitingRoom h2 {
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.waitingRoom p {
+  color: #666;
+  margin-bottom: 30px;
+}
+
+.gamePreview {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 10px;
+  margin-top: 20px;
+}
+
+.gamePreview h3 {
+  margin-top: 0;
+  color: #333;
+}
+
+.miniPreview {
+  margin-top: 20px;
+  opacity: 0.7;
+  transform: scale(0.8);
+  transform-origin: top center;
+}
+
+/* Multiplayer Status in GameBoard */
+.multiplayerStatus {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.roomInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.roomName {
+  font-weight: bold;
+  color: #333;
+}
+
+.playersInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.turnInfo {
+  color: #1976d2;
+  font-weight: bold;
+}
+
+.scores {
+  display: flex;
+  gap: 15px;
+}
+
+.playerScore {
+  padding: 5px 12px;
+  background: white;
+  border-radius: 20px;
+  border: 2px solid #e0e0e0;
+}
+
+.playerScore.currentPlayer {
+  border-color: #1976d2;
+  background: #e3f2fd;
+}
+
+/* Loading and Error States */
+.loadingContainer,
+.errorContainer,
+.notFoundContainer {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.loadingContent,
+.errorContent,
+.notFoundContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: white;
+  text-align: center;
+}
+
+.errorContent button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background: white;
+  color: #667eea;
+  border: none;
+  border-radius: 25px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* Add these styles */
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.notInRoomContainer {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.notInRoomContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  text-align: center;
+}
+
+.joinButton {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 25px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: transform 0.3s ease;
+}
+
+.joinButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+}
+
+.debugInfo {
+  background: #f8f9fa;
+  padding: 10px;
+  border-radius: 8px;
+  margin: 10px 0;
+  font-size: 0.8rem;
+  color: #666;
+  display: none; /* Set to 'block' for debugging, then back to 'none' */
+}
+
+.hostMessage {
+  background: #e3f2fd;
+  padding: 15px;
+  border-radius: 10px;
+  margin: 15px 0;
+  border-left: 4px solid #1976d2;
+}
+
+.warning {
+  color: #f44336;
+  font-weight: bold;
+}
+
+.reconnectButton {
+  background: none;
+  border: none;
+  color: #0070f3;
+  cursor: pointer;
+  font-size: 1.2em;
+  margin-left: 10px;
+  padding: 5px;
+}
+
+.reconnectButton:hover {
+  color: #0051a8;
+}
