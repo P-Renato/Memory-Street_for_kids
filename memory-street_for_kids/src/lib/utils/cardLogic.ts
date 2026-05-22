@@ -24,7 +24,7 @@ export function initializeCards(language: string, cardCount?: number): Card[] {
     selectedCities = cities.slice(0, cardCount);
   }
   
-  const duplicated = [...cities, ...cities];
+  const duplicated = [...selectedCities, ...selectedCities];
   const shuffled = duplicated.sort(() => Math.random() - 0.5);
   
   

@@ -22,8 +22,8 @@ if (typeof window !== 'undefined') {
     const langCode = langData.code;
     const items = langData.items;
 
-    console.log(`\n🔤 Processing language: ${langKey} (${langCode})`);
-    console.log("Items:", Object.keys(items));
+    // console.log(`\n🔤 Processing language: ${langKey} (${langCode})`);
+    // console.log("Items:", Object.keys(items));
 
     audioCache[langKey] = {};
 
@@ -43,18 +43,18 @@ if (typeof window !== 'undefined') {
       const inAvailable = availableAudios.includes(item);
       const inAvailableNormalized = availableAudios.includes(normalized);
 
-      console.log({
-        item,
-        normalized,
-        inAvailable,
-        inAvailableNormalized,
-        filePath,
-      });
+      // console.log({
+      //   item,
+      //   normalized,
+      //   inAvailable,
+      //   inAvailableNormalized,
+      //   filePath,
+      // });
 
       if (inAvailable || inAvailableNormalized) {
         const audio = new Audio(filePath);
         audioCache[langKey]![item] = audio;
-        console.log(`✅ Cached: ${filePath}`);
+        // console.log(`✅ Cached: ${filePath}`);
       } else {
         console.warn(`⚠️ Not found in availableAudios: "${item}"`);
       }

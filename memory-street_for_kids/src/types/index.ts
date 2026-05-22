@@ -12,6 +12,7 @@ export interface GamePlayer {
   userId: string;
   username: string;
   score: number;
+  matchedPairs?: number;
   isReady: boolean;
   isHost: boolean;
 }
